@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistente Briscola - Perfetto 1-10</title>
+    <title>Assistente Briscola - Perfetto</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -60,9 +60,8 @@
             transition: background 0.2s;
         }
         button:hover { background: #219653; }
-        button.active { background: #f1c40f; color: #000; }
+        button.active { background: #f1c40f !important; color: #000 !important; }
 
-        /* Sette e griglie ingrandite */
         .seme-container { margin-bottom: 12px; background: #0b2618; padding: 8px; border-radius: 6px; }
         .seme-title { font-size: 1.1em; color: #f1c40f; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
         .seme-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
@@ -120,7 +119,7 @@
 
 <div class="container">
     <h1>🎴 Briscola Flash Pro</h1>
-    <div class="subtitle">Numeri da 1 a 10 & Automazione Completa</div>
+    <div class="subtitle">Controllo Totale & Selezione Rapida</div>
 
     <!-- Dashboard -->
     <div class="dashboard">
@@ -133,11 +132,11 @@
     <div class="section" style="display: flex; gap: 15px; flex-wrap: wrap;">
         <div style="flex: 1; min-width: 220px;">
             <h3>1. Scegli Seme Briscola</h3>
-            <div class="btn-group" id="briscola-group">
-                <button onclick="setBriscola('Coppe')" id="b-Coppe">❤️ Coppe</button>
-                <button onclick="setBriscola('Denari')" id="b-Denari">🔶 Denari</button>
-                <button onclick="setBriscola('Spade')" id="b-Spade">🗡️ Spade</button>
-                <button onclick="setBriscola('Bastoni')" id="b-Bastoni">🪵 Bastoni</button>
+            <div class="btn-group">
+                <button id="btn-briscola-Coppe" onclick="setBriscola('Coppe')">❤️ Coppe</button>
+                <button id="btn-briscola-Denari" onclick="setBriscola('Denari')">🔶 Denari</button>
+                <button id="btn-briscola-Spade" onclick="setBriscola('Spade')">🗡️ Spade</button>
+                <button id="btn-briscola-Bastoni" onclick="setBriscola('Bastoni')">🪵 Bastoni</button>
             </div>
         </div>
         <div style="flex: 1; min-width: 220px;">
@@ -149,7 +148,7 @@
         </div>
     </div>
 
-    <!-- 3. Mappatura ordinata 1-10 per Seme con scritte grandi -->
+    <!-- 3. Mappatura ordinata 1-10 per Seme -->
     <div class="section">
         <h3>3. Griglia Carte (1 Click = Tua Mano | 2 Click = Avversario se rispondi)</h3>
         <div id="grid-ordinata"></div>
@@ -171,13 +170,12 @@
     <button onclick="eseguiAzione()" style="width:100%; padding:12px; font-size:1.1em; background:#f1c40f; color:#000; border-radius:6px; cursor:pointer; font-weight:bold;">🧠 CHIEDI CONSIGLIO</button>
 
     <div class="advice-box" id="advice-box">
-        Seleziona la briscola e chi comincia, clicca sulle tue carte in mano (diventano blu) e premi il pulsante.
+        Seleziona la briscola in alto, clicca sulle tue carte in mano e premi il pulsante.
     </div>
 </div>
 
 <script>
     const SEMI = ['Coppe', 'Denari', 'Spade', 'Bastoni'];
-    // Numeri da 1 a 10 (1=Asso, 2=Due, 3=Tre, 4=Quattro, 5=Cinque, 6=Sei, 7=Sette, 8=Fante, 9=Cavallo, 10=Re)
     const NUMERI = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const NOMI_CARTE = {
         1: 'Asso', 2: '2', 3: '3', 4: '4', 5: '5', 
@@ -216,7 +214,7 @@
                 let btn = document.createElement('button');
                 btn.className = 'card-btn';
                 btn.id = `card-${num}-${seme}`;
-                btn.innerText = num; // Mostra solo il numero da 1 a 10
+                btn.innerText = num;
                 btn.title = nomeCarta;
                 btn.onclick = () => ciclaStatoCarta(nomeCarta);
                 gridDiv.appendChild(btn);
@@ -231,7 +229,14 @@
     function setBriscola(seme) {
         briscolaScelta = seme;
         SEMI.forEach(s => {
-            document.getElementById(`b-${s}`).className = (s === seme) ? 'active' : '';
+            let btn = document.getElementById(`btn-briscola-${s}`);
+            if (btn) {
+                if (s === seme) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            }
         });
         document.getElementById('lbl-briscola').innerText = seme;
         aggiornaUI();
@@ -319,7 +324,7 @@
             let scelta = lisci.length > 0 ? lisci[0] : (mano.find(c => !c.endsWith(` di ${briscolaScelta}`)) || mano[0]);
             
             cartaMiaScelta = scelta;
-            msg = `👉 <strong>Tu giochi per primo. Metti giù:</strong> ${scelta}<br><span style="font-size:0.85em; color:#f39c12;">💡 Quando l'avversario risponde online, clicca sulla sua carta nella griglia e ripremi il pulsante: farà tutto da solo!</span>`;
+            msg = `👉 <strong>Tu giochi per primo. Metti giù:</strong> ${scelta}<br><span style="font-size:0.85em; color:#f39c12;">💡 Quando l'avversario risponde online, clicca sulla sua carta nella griglia e ripremi il pulsante!</span>`;
             chiIniziaTurno = 'avversario'; 
         } else {
             if (!cartaAvversario) {
