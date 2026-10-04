@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistente Briscola - Ordinato 1-10</title>
+    <title>Assistente Briscola - Controllo Visivo</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -62,34 +62,46 @@
         button:hover { background: #219653; }
         button.active { background: #f1c40f; color: #000; }
 
-        .seme-container {
-            margin-bottom: 8px;
-        }
-        .seme-title {
-            font-size: 0.8em;
-            color: #f1c40f;
-            margin-bottom: 3px;
-            font-weight: bold;
-        }
-        .seme-grid {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 4px;
-        }
+        .seme-container { margin-bottom: 8px; }
+        .seme-title { font-size: 0.8em; color: #f1c40f; margin-bottom: 3px; font-weight: bold; }
+        .seme-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+        
         .card-btn {
             background: #fff;
             color: #333;
             border: 1px solid #ccc;
-            padding: 5px 2px;
+            padding: 6px 2px;
             text-align: center;
             border-radius: 3px;
             font-size: 0.75em;
             cursor: pointer;
             font-weight: bold;
         }
-        .card-btn.in-mano { background: #2980b9 !important; color: #fff !important; border-color: #1f618d; }
+        .card-btn.in-mano { background: #2980b9 !important; color: #fff !important; border-color: #1f618d; transform: scale(1.05); }
         .card-btn.giocata { background: #c0392b !important; color: #fff !important; text-decoration: line-through; opacity: 0.4; }
         .card-btn.avversario { background: #d35400 !important; color: #fff !important; border-color: #ba4a00; }
+
+        /* Riquadro di controllo visivo per le tue carte */
+        .mano-display {
+            background: #0b2618;
+            border: 2px dashed #2980b9;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mano-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            background: #2980b9;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
 
         .advice-box {
             background: #1c2833;
@@ -106,7 +118,7 @@
 
 <div class="container">
     <h1>🎴 Briscola Flash Pro</h1>
-    <div class="subtitle">Carte ordinate da 1 a 10 per seme</div>
+    <div class="subtitle">Controllo visivo immediato della mano</div>
 
     <!-- Dashboard -->
     <div class="dashboard">
@@ -137,9 +149,17 @@
 
     <!-- 3. Mappatura ordinata 1-10 -->
     <div class="section">
-        <h3>3. Seleziona Carte (1 click = Tua Mano | 2 = Uscita | 3 = Avversario)</h3>
+        <h3>3. Seleziona le tue 3 carte (1 click = Blu/In Mano)</h3>
         <div id="grid-ordinata"></div>
         
+        <!-- Display visivo chiaro della mano -->
+        <div class="mano-display">
+            <span>🟦 <strong>Le tue 3 carte attuali:</strong></span>
+            <div class="mano-tags" id="mano-tags-container">
+                <span style="color: #bdc3c7; font-style: italic;">Nessuna carta selezionata</span>
+            </div>
+        </div>
+
         <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
             <button onclick="assegnaPresa('io')" style="background:#27ae60; padding:5px 8px; font-size:0.75em;">Presa Mia (+pt)</button>
             <button onclick="assegnaPresa('avversario')" style="background:#c0392b; padding:5px 8px; font-size:0.75em;">Presa Avv.</button>
@@ -148,16 +168,15 @@
     </div>
 
     <!-- 4. Pulsante e Consiglio -->
-    <button onclick="generaConsiglio()" style="width:100%; padding:10px; font-size:1.05em; background:#f1c40f; color:#000; border-radius:5px; cursor:pointer; font-weight:bold;">🧠 DAMMI IL CONSIGLIO RAPIDO</button>
+    <button onclick="generaConsiglio()" style="width:100%; padding:10px; font-size:1.05em; background:#f1c40f; color:#000; border-radius:5px; cursor:pointer; font-weight:bold;">🧠 DAMMI IL CONSIGLIO</button>
 
     <div class="advice-box" id="advice-box">
-        Seleziona la briscola, clicca sulle tue 3 carte in mano e premi il tasto di analisi.
+        Seleziona la briscola, clicca sulle tue 3 carte (diventeranno blu e compariranno nel riquadro sopra) e premi il tasto di analisi.
     </div>
 </div>
 
 <script>
     const SEMI = ['Coppe', 'Denari', 'Spade', 'Bastoni'];
-    // Ordine sequenziale da 1 a 10 (Asso, 2, 3, 4, 5, 6, 7, Fante, Cavallo, Re)
     const VALORI_SEQUENZA = ['A', '2', '3', '4', '5', '6', '7', 'F', 'C', 'R'];
     const VALORI_FULL = {'A': 'Asso', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', 'F': 'Fante', 'C': 'Cavallo', 'R': 'Re'};
     
@@ -260,12 +279,32 @@
     }
 
     function aggiornaUI() {
+        let manoContainer = document.getElementById('mano-tags-container');
+        manoContainer.innerHTML = '';
+        let carteInMano = [];
+
         Object.keys(statiCarte).forEach(carta => {
             let parti = carta.split(' di ');
             let vChar = Object.keys(VALORI_FULL).find(k => VALORI_FULL[k] === parti[0]);
             let btn = document.getElementById(`card-${vChar}-${parti[1]}`);
             if(btn) btn.className = `card-btn ${statiCarte[carta]}`;
+            
+            if (statiCarte[carta] === 'mano') {
+                carteInMano.push(carta);
+            }
         });
+
+        if (carteInMano.length === 0) {
+            manoContainer.innerHTML = '<span style="color: #bdc3c7; font-style: italic;">Nessuna carta selezionata</span>';
+        } else {
+            carteInMano.forEach(c => {
+                let tag = document.createElement('div');
+                tag.className = 'card-tag';
+                tag.innerText = c;
+                manoContainer.appendChild(tag);
+            });
+        }
+
         document.getElementById('lbl-miei-punti').innerText = mieiPunti + " pt";
         document.getElementById('lbl-avv-punti').innerText = puntiAvversario + " pt";
     }
