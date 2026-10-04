@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Briscola Master AI - Strategia Corretta</title>
+    <title>Briscola Pro World Champion AI</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #0b2e1b; color: #fff; margin: 0; padding: 10px; }
         .container { max-width: 850px; margin: 0 auto; background: #134229; padding: 15px; border-radius: 12px; border: 1px solid #1e6b42; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
@@ -18,23 +18,19 @@
         .box-area { flex: 1; min-width: 280px; background: #0f3822; padding: 15px; border-radius: 8px; border: 1px solid #1e6b42; }
         .box-title { color: #2ecc71; margin-top: 0; font-size: 1em; margin-bottom: 10px; text-align: center; border-bottom: 1px solid #1e6b42; padding-bottom: 5px; }
         
-        /* TAVOLO */
         .tavolo-slots { display: flex; justify-content: space-around; align-items: center; gap: 10px; height: 90px; }
         .slot { flex: 1; border: 2px dashed #34495e; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; font-size: 0.9em; color: #7f8c8d; background: #0a1f13; }
         .slot.filled { border: 3px solid #f1c40f; background: #fff; color: #000; font-weight: bold; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
 
-        /* MANO */
         .mano-slots { display: flex; justify-content: center; gap: 10px; height: 90px; }
         .mano-card { flex: 1; max-width: 85px; background: #2980b9; color: white; border: 2px solid #1f618d; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; font-size: 1em; text-align: center; }
         .mano-card.empty { background: transparent; border: 2px dashed #2980b9; color: transparent; }
 
-        /* SWITCH SELEZIONE */
         .mode-selector { display: flex; background: #0b2618; border-radius: 6px; overflow: hidden; margin-bottom: 10px; border: 1px solid #1e6b42; }
         .mode-btn { flex: 1; padding: 10px; text-align: center; font-weight: bold; background: transparent; border: none; color: #7f8c8d; font-size: 0.95em; pointer-events: none; }
         .mode-btn.active-mia { background: #2980b9; color: #fff; }
         .mode-btn.active-avv { background: #e74c3c; color: #fff; }
 
-        /* GRIGLIA CARTE */
         .seme-container { background: #0b2618; padding: 8px; border-radius: 6px; margin-bottom: 8px; }
         .seme-title { font-size: 0.9em; color: #f1c40f; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .seme-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
@@ -54,7 +50,7 @@
 <body>
 
 <div class="container">
-    <h1>🎴 Briscola Master Strategica V2</h1>
+    <h1>🎴 Briscola Pro World Champion</h1>
     
     <div id="banner-stato">INIZIALIZZAZIONE...</div>
 
@@ -99,7 +95,7 @@
         <div id="grid-container"></div>
     </div>
 
-    <div class="log-box" id="log-eventi">Sistema pronto. 1) Scegli la carta di Briscola dai pulsantini sotto. 2) Seleziona le 3 carte che hai in mano.</div>
+    <div class="log-box" id="log-eventi">Configura la briscola e le tue 3 carte iniziali. L'IA applicherà le tattiche dei campioni del mondo.</div>
 </div>
 
 <script>
@@ -161,7 +157,7 @@
 
         let finePartita = uscite.length >= 40;
         if (finePartita) {
-            let esito = punti.miei >= 61 ? "🏆 HAI VINTO LA PARTITA!" : "☠️ HAI PERSO LA PARTITA.";
+            let esito = punti.miei >= 61 ? "🏆 PARTITA VINTA! (Campione del Mondo)" : "☠️ PARTITA PERSA.";
             impostaStato("🏁 PARTITA TERMINATA", "#2c3e50", 'mia');
             log(`<strong>${esito}</strong><br>Punti totali: Tu ${punti.miei} - Avversario ${punti.avv}`);
             return;
@@ -187,10 +183,10 @@
         }
 
         if (turnoCorrente === 'io' && !tavolo.mia && mano.length > 0) {
-            let mossa = IA_StrategiaApertura();
+            let mossa = PRO_StrategiaApertura();
             tavolo.mia = mossa;
             mano = mano.filter(c => c !== mossa);
-            log(`🤖 <strong>APERTURA TATTICA:</strong> Giocato il ${nome(mossa)}.`);
+            log(`🧠 <strong>APERTURA PRO:</strong> Giocato il ${nome(mossa)} (valutando le carte nel mazzo).`);
             cicloDiGioco(); return;
         }
 
@@ -205,10 +201,10 @@
         }
 
         if (turnoCorrente === 'avv' && tavolo.avv && !tavolo.mia && mano.length > 0) {
-            let mossa = IA_StrategiaRisposta(tavolo.avv);
+            let mossa = PRO_StrategiaRisposta(tavolo.avv);
             tavolo.mia = mossa;
             mano = mano.filter(c => c !== mossa);
-            log(`🤖 <strong>DIFESA/ATTACCO:</strong> Lui ${nome(tavolo.avv)}. Io rispondo con ${nome(mossa)}.`);
+            log(`🧠 <strong>DIFESA PRO:</strong> Avversario ha tirato ${nome(tavolo.avv)}. Io rispondo con ${nome(mossa)}.`);
             cicloDiGioco(); return;
         }
     }
@@ -223,37 +219,49 @@
             else if (mano.length < 3) mano.push(idCarta);
         } else {
             if (mano.includes(idCarta)) {
-                alert("Questa è la tua carta! Usa una carta non tua per l'avversario."); return;
+                alert("Questa è la tua carta in mano! Clicca una carta dell'avversario."); return;
             }
             tavolo.avv = idCarta;
         }
         cicloDiGioco();
     }
 
-    function IA_StrategiaApertura() {
+    // --- ALGORITMO MONDIALE: APERTURA ---
+    function PRO_StrategiaApertura() {
         let mie = mano.map(id => {
             let [n, s] = id.split('-');
-            return { id: id, p: PUNTI[n], f: FORZA[n], isB: (s === briscola.seme) };
+            return { id: id, n: parseInt(n), s: s, p: PUNTI[n], f: FORZA[n], isB: (s === briscola.seme) };
         });
 
+        let faseFinale = uscite.length >= 30;
+
+        // In fase finale, si gioca aggressivi con le carte forti se si deve recuperare
+        if (faseFinale) {
+            mie.sort((a, b) => b.p - a.p || b.f - a.f);
+            return mie[0].id;
+        }
+
+        // Tattica Pro: Aprire sempre con un "liscio" a 0 punti (es. 2, 4, 5, 6, 7) che non sia briscola, preferendo il più basso per non scoprirsi.
         let lisciZero = mie.filter(c => !c.isB && c.p === 0);
         if (lisciZero.length > 0) {
             lisciZero.sort((a, b) => a.f - b.f);
             return lisciZero[0].id;
         }
 
+        // Se non hai lisci a 0, cerca una non-briscola a minor punteggio
         let nonBriscole = mie.filter(c => !c.isB);
         if (nonBriscole.length > 0) {
             nonBriscole.sort((a, b) => a.p - b.p || a.f - b.f);
             return nonBriscole[0].id;
         }
 
+        // Se hai solo briscole, gioca la briscola con la forza minore
         mie.sort((a, b) => a.f - b.f);
         return mie[0].id;
     }
 
-    // --- STRATEGIA DI RISPOSTA CORRETTA AL 100% ---
-    function IA_StrategiaRisposta(cartaAvv) {
+    // --- ALGORITMO MONDIALE: DIFESA E RISPOSTA ---
+    function PRO_StrategiaRisposta(cartaAvv) {
         let [nAvv, sAvv] = cartaAvv.split('-');
         let pA = PUNTI[nAvv];
         let fB = FORZA[nAvv];
@@ -265,26 +273,25 @@
             return { id: id, n: parseInt(n), s: s, p: PUNTI[n], f: FORZA[n], isB: (s === briscola.seme) };
         });
 
-        // 1. REGOLA ASSOLUTA: Se l'avversario ha buttato una carta da 0 punti (es. il 7 di coppe)
+        // 1. SE L'AVVERSARIO HA TIRATO UNA CARTA DA 0 PUNTI (Es. 7, 6, 5, 4, 2):
         if (pA === 0 && !faseFinale) {
-            // Controlla se possiamo vincere GRATIS con lo stesso seme senza sprecare briscole o carichi
-            let vincentiGratis = mie.filter(c => !c.isB && c.s === sAvv && c.f > fB);
+            // Se possiamo vincere GRATIS con lo stesso seme senza sprecare briscole o carichi preziosi:
+            let vincentiGratis = mie.filter(c => !c.isB && c.s === sAvv && c.f > fB && c.p === 0);
             if (vincentiGratis.length > 0) {
-                vincentiGratis.sort((a, b) => a.p - b.p || a.f - b.f);
-                return vincentiGratis[0].id; // Prendi se hai una carta alta dello stesso seme che non sia un carico prezioso
+                vincentiGratis.sort((a, b) => a.f - b.f);
+                return vincentiGratis[0].id;
             }
 
-            // Altrimenti, SCARTA LA PEGGIORE IN ASSOLUTO (evitando di buttare Asso o Tre!)
-            // Ordiniamo per valore di punti crescente (prima i 0 punti), poi per forza decrescente (buttiamo prima i lisci più alti o inutili)
+            // REGOLA D'ORO DEI PRO: Mai sprecare carichi (Assi/Tre) o briscole per un 0 punti. Scarta la carta peggiore in assoluto.
             mie.sort((a, b) => {
                 if (a.p !== b.p) return a.p - b.p; // Prima le carte che valgono 0 punti
-                if (a.isB !== b.isB) return a.isB ? 1 : -1; // Non buttare briscole se possibile
-                return b.f - a.f; // A parità di punti, scarta la carta di minor valore strategico
+                if (a.isB !== b.isB) return a.isB ? 1 : -1; // Non buttare briscole
+                return b.f - a.f; // A parità di punti, libera la mano dalle carte intermedie o inutili
             });
             return mie[0].id;
         }
 
-        // 2. SE L'AVVERSARIO HA MESSO PUNTI (Asso=11, Tre=10) O SIAMO IN FINALE:
+        // 2. SE L'AVVERSARIO HA MESSO UN CARICO (Asso=11, Tre=10) O SIAMO IN FINALE:
         let vincenti = mie.filter(c => {
             if (c.s === sAvv && c.f > fB) return true; 
             if (c.isB && !isAvvBrisc) return true;     
@@ -293,11 +300,12 @@
         });
 
         if (vincenti.length === 0) {
-            // Se non puoi vincere, scarta la peggiore
-            mie.sort((a, b) => a.p - b.p || a.f - b.f);
+            // Se non puoi vincere, scarta la carta meno preziosa della mano
+            mie.sort((a, b) => a.p - b.p || a.isB - b.isB || a.f - b.f);
             return mie[0].id;
         }
 
+        // Scegli la vincente che consuma meno risorse (evitando di sprecare briscole alte se puoi usare una carta normale)
         vincenti.sort((a, b) => {
             if (a.isB !== b.isB) return a.isB ? 1 : -1; 
             return a.p - b.p || a.f - b.f;
