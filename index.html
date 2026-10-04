@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistente Briscola - Controllo Visivo</title>
+    <title>Assistente Briscola - Automazione Totale</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -81,7 +81,6 @@
         .card-btn.giocata { background: #c0392b !important; color: #fff !important; text-decoration: line-through; opacity: 0.4; }
         .card-btn.avversario { background: #d35400 !important; color: #fff !important; border-color: #ba4a00; }
 
-        /* Riquadro di controllo visivo per le tue carte */
         .mano-display {
             background: #0b2618;
             border: 2px dashed #2980b9;
@@ -92,6 +91,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .mano-tags { display: flex; gap: 6px; flex-wrap: wrap; }
         .card-tag {
@@ -118,7 +119,7 @@
 
 <div class="container">
     <h1>🎴 Briscola Flash Pro</h1>
-    <div class="subtitle">Controllo visivo immediato della mano</div>
+    <div class="subtitle">Automazione Presa & Controllo Visivo</div>
 
     <!-- Dashboard -->
     <div class="dashboard">
@@ -149,21 +150,21 @@
 
     <!-- 3. Mappatura ordinata 1-10 -->
     <div class="section">
-        <h3>3. Seleziona le tue 3 carte (1 click = Blu/In Mano)</h3>
+        <h3>3. Seleziona Carte (1 click = Tua Mano | 2 = Uscita | 3 = Avversario)</h3>
         <div id="grid-ordinata"></div>
         
         <!-- Display visivo chiaro della mano -->
         <div class="mano-display">
-            <span>🟦 <strong>Le tue 3 carte attuali:</strong></span>
+            <span>🟦 <strong>Tua Mano Attuale:</strong></span>
             <div class="mano-tags" id="mano-tags-container">
                 <span style="color: #bdc3c7; font-style: italic;">Nessuna carta selezionata</span>
             </div>
         </div>
 
-        <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
-            <button onclick="assegnaPresa('io')" style="background:#27ae60; padding:5px 8px; font-size:0.75em;">Presa Mia (+pt)</button>
-            <button onclick="assegnaPresa('avversario')" style="background:#c0392b; padding:5px 8px; font-size:0.75em;">Presa Avv.</button>
-            <button onclick="resetPartita()" style="background:#7f8c8d; padding:5px 8px; font-size:0.75em;">Reset</button>
+        <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
+            <button onclick="assegnaPresa('io')" style="background:#27ae60; padding:6px 10px; font-size:0.8em;">⚡ Presa Mia (+ Punti & Elimina)</button>
+            <button onclick="assegnaPresa('avversario')" style="background:#c0392b; padding:6px 10px; font-size:0.8em;">⚡ Presa Avv. (+ Punti & Elimina)</button>
+            <button onclick="resetPartita()" style="background:#7f8c8d; padding:6px 10px; font-size:0.8em;">Reset</button>
         </div>
     </div>
 
@@ -171,7 +172,7 @@
     <button onclick="generaConsiglio()" style="width:100%; padding:10px; font-size:1.05em; background:#f1c40f; color:#000; border-radius:5px; cursor:pointer; font-weight:bold;">🧠 DAMMI IL CONSIGLIO</button>
 
     <div class="advice-box" id="advice-box">
-        Seleziona la briscola, clicca sulle tue 3 carte (diventeranno blu e compariranno nel riquadro sopra) e premi il tasto di analisi.
+        Seleziona la briscola, clicca sulle tue carte in mano e premi il tasto di analisi.
     </div>
 </div>
 
@@ -186,6 +187,7 @@
     let briscolaScelta = null;
     let turnoScelto = '1'; 
     let cartaAvversario = null;
+    let cartaGiocataDaMe = null; // Memoria della carta che hai scelto di giocare
     let statiCarte = {}; 
     let mieiPunti = 0;
     let puntiAvversario = 0;
@@ -265,14 +267,38 @@
     }
 
     function assegnaPresa(chi) {
+        // Calcola i punti delle carte attualmente sul tavolo (la tua giocata + quella dell'avversario)
         let ultime = Object.keys(statiCarte).filter(k => statiCarte[k] === 'giocata' || statiCarte[k] === 'avversario');
+        
+        // Se avevi memorizzato la carta giocata da te, assicurati di includerla nel conteggio e marchiala come uscita
+        if (cartaGiocataDaMe && statiCarte[cartaGiocataDaMe] !== 'giocata') {
+            statiCarte[cartaGiocataDaMe] = 'giocata';
+            if (!ultime.includes(cartaGiocataDaMe)) ultime.push(cartaGiocataDaMe);
+        }
+
         let punti = ultime.reduce((sum, c) => sum + PUNTI[c.split(' di ')[0]], 0);
-        if (chi === 'io') mieiPunti += punti; else puntiAvversario += punti;
+        
+        if (chi === 'io') mieiPunti += punti; 
+        else puntiAvversario += punti;
+
+        // ELIMINAZIONE AUTOMATICA: segna come "giocate" (rosse/eliminate) sia la carta dell'avversario che la tua ultima mossa
+        if (cartaAvversario) {
+            statiCarte[cartaAvversario] = 'giocata';
+        }
+        if (cartaGiocataDaMe) {
+            statiCarte[cartaGiocataDaMe] = 'giocata';
+        }
+
+        // Pulisci le memorie del turno
+        cartaAvversario = null;
+        cartaGiocataDaMe = null;
+
         aggiornaUI();
+        document.getElementById('advice-box').innerHTML = "✅ Presa registrata e carte eliminate automaticamente dal mazzo. Pronto per il turno successivo!";
     }
 
     function resetPartita() {
-        mieiPunti = 0; puntiAvversario = 0; cartaAvversario = null;
+        mieiPunti = 0; puntiAvversario = 0; cartaAvversario = null; cartaGiocataDaMe = null;
         Object.keys(statiCarte).forEach(k => statiCarte[k] = 'normale');
         aggiornaUI();
         document.getElementById('advice-box').innerHTML = "Partita resettata.";
@@ -295,7 +321,7 @@
         });
 
         if (carteInMano.length === 0) {
-            manoContainer.innerHTML = '<span style="color: #bdc3c7; font-style: italic;">Nessuna carta selezionata</span>';
+            manoContainer.innerHTML = '<span style="color: #bdc3c7; font-style: italic;">Nessuna carta selezionata (pesca o inserisci le nuove)</span>';
         } else {
             carteInMano.forEach(c => {
                 let tag = document.createElement('div');
@@ -319,14 +345,12 @@
 
         if (turnoScelto === '1') {
             let lisci = mano.filter(c => !c.endsWith(` di ${briscolaScelta}`) && ['7','6','5','4','2'].some(v => c.startsWith(v)));
-            if (lisci.length > 0) msg = `👉 <strong>Gioca la carta liscia:</strong> ${lisci[0]}`;
-            else {
-                let nonBrisc = mano.filter(c => !c.endsWith(` di ${briscolaScelta}`));
-                let scelta = nonBrisc.length > 0 ? nonBrisc[0] : mano[0];
-                msg = `👉 <strong>Gioca la meno rischiosa:</strong> ${scelta}`;
-            }
+            let scelta = lisci.length > 0 ? lisci[0] : (mano.find(c => !c.endsWith(` di ${briscolaScelta}`)) || mano[0]);
+            
+            cartaGiocataDaMe = scelta; // Memorizza la carta consigliata
+            msg = `👉 <strong>Gioca:</strong> ${scelta} <br><span style="font-size:0.8em; color:#bdc3c7;">(Appena clicchi su Presa Mia/Avv, questa carta sparirà automaticamente dalla mano)</span>`;
         } else {
-            if (!cartaAvversario) { msg = "⚠️ Clicca sulla carta tirata dall'avversario."; box.innerHTML = msg; return; }
+            if (!cartaAvversario) { msg = "⚠️ Clicca sulla carta tirata dall'avversario nella griglia."; box.innerHTML = msg; return; }
             let [vAvv, sAvv] = cartaAvversario.split(' di ');
             let pAvv = PUNTI[vAvv];
             
@@ -337,12 +361,15 @@
                 return false;
             });
 
+            let scelta = "";
             if (vincenti.length === 0 || pAvv === 0) {
-                let peggiore = mano.reduce((p, c) => PUNTI[p.split(' di ')[0]] < PUNTI[c.split(' di ')[0]] ? p : c);
-                msg = `❌ <strong>Non rischiare briscole o carichi.</strong> Scarta: ${peggiore}`;
+                scelta = mano.reduce((p, c) => PUNTI[p.split(' di ')[0]] < PUNTI[c.split(' di ')[0]] ? p : c);
+                msg = `❌ <strong>Non rischiare.</strong> Scarta: ${scelta}`;
             } else {
-                msg = `🔥 <strong>L'avversario ha messo ${pAvv} pt. Conviene prendere!</strong> Gioca: ${vincenti[0]}`;
+                scelta = vincenti[0];
+                msg = `🔥 <strong>L'avversario ha messo ${pAvv} pt. Prendi con:</strong> ${scelta}`;
             }
+            cartaGiocataDaMe = scelta; // Memorizza la carta scelta
         }
         box.innerHTML = msg;
     }
