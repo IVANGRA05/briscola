@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistente Briscola - Perfetto & Manuale</title>
+    <title>Assistente Briscola - Perfetto & Senza Bug</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -143,8 +143,8 @@
 <body>
 
 <div class="container">
-    <h1>🎴 Briscola Autonoma Perfetta</h1>
-    <div class="subtitle">Gestione manuale della pescata e calcolo automatico</div>
+    <h1>🎴 Briscola Autonoma Definitiva</h1>
+    <div class="subtitle">Gestione perfetta di mano, pescata e prese</div>
 
     <!-- Dashboard -->
     <div class="dashboard">
@@ -169,7 +169,7 @@
 
     <!-- 2. Griglia Carte e Selezione Briscola -->
     <div class="section">
-        <h3>2. Griglia Carte (1 Click = Tua Mano | 2 Click = Avversario | 3 Click = Uscita)</h3>
+        <h3>2. Griglia Carte (Click = In Mano / Toggle)</h3>
         <div id="grid-ordinata"></div>
         
         <!-- Display visivo chiaro della mano -->
@@ -185,7 +185,7 @@
     <button onclick="eseguiAnalisiIntelligente()" style="width:100%; padding:14px; font-size:1.15em; background:#f1c40f; color:#000; border-radius:6px; cursor:pointer; font-weight:bold;">🧠 CHIEDI CONSIGLIO MOSSA</button>
 
     <div class="advice-box" id="advice-box">
-        Imposta la briscola sotto il seme, seleziona le tue 3 carte in mano e premi il pulsante. Quando peschi una nuova carta dopo una presa, cliccaci sopra per aggiungerla.
+        Imposta la briscola sotto il seme, seleziona le tue 3 carte in mano e chiedi il consiglio. Quando giochi una carta, cliccaci sopra per scartarla, e clicca sulla nuova carta pescata per metterla in mano.
     </div>
 </div>
 
@@ -291,14 +291,15 @@
         if (statoAttuale === 'normale') {
             if (mieInMano.length < 3) {
                 statiCarte[carta] = 'mano';
-            } else if (turnoChiApre === 'avversario') {
+            } else if (turnoChiApre === 'avversario' && !cartaAvversarioInCampo) {
                 statiCarte[carta] = 'avversario';
                 cartaAvversarioInCampo = carta;
             } else {
                 statiCarte[carta] = 'giocata';
             }
         } else if (statoAttuale === 'mano') {
-            statiCarte[carta] = 'giocata';
+            // Se è in mano, un click la fa tornare normale (o la rimuove)
+            statiCarte[carta] = 'normale';
         } else if (statoAttuale === 'avversario') {
             statiCarte[carta] = 'normale';
             cartaAvversarioInCampo = null;
@@ -373,7 +374,10 @@
             let lisci = mano.filter(c => !c.endsWith(` di ${semeBriscola}`) && ['7','6','5','4','2','Asso'].some(v => c.startsWith(v)));
             let scelta = lisci.length > 0 ? lisci[0] : (mano.find(c => !c.endsWith(` di ${semeBriscola}`)) || mano[0]);
 
-            msg = `👉 <strong>CONSIGLIO D'APERTURA:</strong> Gioca <strong>${scelta}</strong>.<br><span style="font-size:0.9em; color:#f39c12;">💡 Appena giochi questa carta, cliccaci sopra per segnarla come giocata, e quando peschi la nuova carta dal mazzo online, clicca sulla nuova carta per aggiungerla in mano!</span>`;
+            msg = `👉 <strong>CONSIGLIO D'APERTURA:</strong> Gioca <strong>${scelta}</strong>.<br><span style="font-size:0.9em; color:#f39c12;">💡 Quando l'avversario risponde online, clicca sulla sua carta e ripremi il pulsante!</span>`;
+            
+            // Segna la tua mossa come giocata
+            statiCarte[scelta] = 'giocata';
             turnoChiApre = 'avversario'; 
 
         } else {
@@ -431,8 +435,6 @@
             statiCarte[cartaAvversarioInCampo] = 'giocata';
             statiCarte[sceltaMossa] = 'giocata';
             cartaAvversarioInCampo = null;
-
-            msg += `<br><span style="font-size:0.85em; color:#f39c12;">💡 Le carte sul tavolo sono state scartate. Clicca sulla nuova carta che peschi dal mazzo per metterla in mano!</span>`;
         }
 
         aggiornaUI();
