@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Briscola Master AI - Strategia Perfetta</title>
+    <title>Briscola Master AI - Strategia Corretta</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #0b2e1b; color: #fff; margin: 0; padding: 10px; }
         .container { max-width: 850px; margin: 0 auto; background: #134229; padding: 15px; border-radius: 12px; border: 1px solid #1e6b42; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
@@ -54,7 +54,7 @@
 <body>
 
 <div class="container">
-    <h1>🎴 Briscola Master Strategica</h1>
+    <h1>🎴 Briscola Master Strategica V2</h1>
     
     <div id="banner-stato">INIZIALIZZAZIONE...</div>
 
@@ -230,34 +230,29 @@
         cicloDiGioco();
     }
 
-    // --- STRATEGIA DI APERTURA (Quando tiri tu per primo) ---
     function IA_StrategiaApertura() {
         let mie = mano.map(id => {
             let [n, s] = id.split('-');
             return { id: id, p: PUNTI[n], f: FORZA[n], isB: (s === briscola.seme) };
         });
 
-        // 1. Cerca prima un "liscio" a 0 punti che non sia briscola (es. 2, 4, 5, 6, 7)
         let lisciZero = mie.filter(c => !c.isB && c.p === 0);
         if (lisciZero.length > 0) {
-            // Tira il liscio con forza minore per non sprecare carte buone
             lisciZero.sort((a, b) => a.f - b.f);
             return lisciZero[0].id;
         }
 
-        // 2. Se non hai lisci a 0, cerca una non-briscola qualsiasi che valga meno punti possibili
         let nonBriscole = mie.filter(c => !c.isB);
         if (nonBriscole.length > 0) {
             nonBriscole.sort((a, b) => a.p - b.p || a.f - b.f);
             return nonBriscole[0].id;
         }
 
-        // 3. Se hai solo briscole in mano, gioca la briscola più bassa
         mie.sort((a, b) => a.f - b.f);
         return mie[0].id;
     }
 
-    // --- STRATEGIA DI RISPOSTA (Quando rispondi all'avversario) ---
+    // --- STRATEGIA DI RISPOSTA CORRETTA AL 100% ---
     function IA_StrategiaRisposta(cartaAvv) {
         let [nAvv, sAvv] = cartaAvv.split('-');
         let pA = PUNTI[nAvv];
@@ -267,41 +262,44 @@
 
         let mie = mano.map(id => {
             let [n, s] = id.split('-');
-            return { id: id, s: s, p: PUNTI[n], f: FORZA[n], isB: (s === briscola.seme) };
+            return { id: id, n: parseInt(n), s: s, p: PUNTI[n], f: FORZA[n], isB: (s === briscola.seme) };
         });
 
-        // Trova tutte le carte con cui puoi vincere legalmente la mano
+        // 1. REGOLA ASSOLUTA: Se l'avversario ha buttato una carta da 0 punti (es. il 7 di coppe)
+        if (pA === 0 && !faseFinale) {
+            // Controlla se possiamo vincere GRATIS con lo stesso seme senza sprecare briscole o carichi
+            let vincentiGratis = mie.filter(c => !c.isB && c.s === sAvv && c.f > fB);
+            if (vincentiGratis.length > 0) {
+                vincentiGratis.sort((a, b) => a.p - b.p || a.f - b.f);
+                return vincentiGratis[0].id; // Prendi se hai una carta alta dello stesso seme che non sia un carico prezioso
+            }
+
+            // Altrimenti, SCARTA LA PEGGIORE IN ASSOLUTO (evitando di buttare Asso o Tre!)
+            // Ordiniamo per valore di punti crescente (prima i 0 punti), poi per forza decrescente (buttiamo prima i lisci più alti o inutili)
+            mie.sort((a, b) => {
+                if (a.p !== b.p) return a.p - b.p; // Prima le carte che valgono 0 punti
+                if (a.isB !== b.isB) return a.isB ? 1 : -1; // Non buttare briscole se possibile
+                return b.f - a.f; // A parità di punti, scarta la carta di minor valore strategico
+            });
+            return mie[0].id;
+        }
+
+        // 2. SE L'AVVERSARIO HA MESSO PUNTI (Asso=11, Tre=10) O SIAMO IN FINALE:
         let vincenti = mie.filter(c => {
-            if (c.s === sAvv && c.f > fB) return true; // Stesso seme più forte
-            if (c.isB && !isAvvBrisc) return true;     // Taglio di briscola se lui non è a briscola
-            if (c.isB && isAvvBrisc && c.f > fB) return true; // Briscola più alta se anche lui è a briscola
+            if (c.s === sAvv && c.f > fB) return true; 
+            if (c.isB && !isAvvBrisc) return true;     
+            if (c.isB && isAvvBrisc && c.f > fB) return true; 
             return false;
         });
 
-        // Se non puoi vincere in nessun modo, scarta la carta peggiore (0 punti e minor forza)
         if (vincenti.length === 0) {
+            // Se non puoi vincere, scarta la peggiore
             mie.sort((a, b) => a.p - b.p || a.f - b.f);
             return mie[0].id;
         }
 
-        // Se l'avversario ha buttato una carta da 0 punti (es. un 2 o un 4), NON sprecare una briscola o un carico a meno che non siamo in finale!
-        if (pA === 0 && !faseFinale) {
-            // Controlla se puoi vincere senza sprecare briscole (es. con un Asso di un altro seme se lui ha tirato un 2 dello stesso seme)
-            let vincentiLisce = vincenti.filter(c => !c.isB);
-            if (vincentiLisce.length > 0) {
-                vincentiLisce.sort((a, b) => a.p - b.p || a.f - b.f);
-                return vincentiLisce[0].id; // Prendi gratis senza briscola
-            } else {
-                // Altrimenti, per un 2 da 0 punti, rifiutati di sprecare briscole o carichi: scarta la peggiore!
-                mie.sort((a, b) => a.p - b.p || a.f - b.f);
-                return mie[0].id;
-            }
-        }
-
-        // Se l'avversario ha messo un carico (Asso=11 o Tre=10) o siamo alla fine, CONVIENE PRENDERE!
-        // Ordina le vincenti per usare quella che consuma meno valore possibile (es. briscola bassa o carta di minor valore)
         vincenti.sort((a, b) => {
-            if (a.isB !== b.isB) return a.isB ? 1 : -1; // Preferisci non usare briscole se puoi
+            if (a.isB !== b.isB) return a.isB ? 1 : -1; 
             return a.p - b.p || a.f - b.f;
         });
 
