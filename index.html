@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistente Briscola - Perfetto</title>
+    <title>Assistente Briscola - Supremo & Autonomo</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -13,12 +13,12 @@
             padding: 10px;
         }
         .container {
-            max-width: 800px;
+            max-width: 820px;
             margin: 0 auto;
             background: #134229;
             padding: 15px;
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
             border: 1px solid #1e6b42;
         }
         h1 { text-align: center; color: #f1c40f; margin-bottom: 2px; font-size: 1.4em; }
@@ -62,6 +62,18 @@
         button:hover { background: #219653; }
         button.active { background: #f1c40f !important; color: #000 !important; }
 
+        select {
+            background: #1c2833;
+            color: #fff;
+            border: 1px solid #27ae60;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+            width: 100%;
+            cursor: pointer;
+        }
+
         .seme-container { margin-bottom: 12px; background: #0b2618; padding: 8px; border-radius: 6px; }
         .seme-title { font-size: 1.1em; color: #f1c40f; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
         .seme-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
@@ -80,6 +92,7 @@
         .card-btn.in-mano { background: #2980b9 !important; color: #fff !important; border-color: #1f618d; transform: scale(1.05); }
         .card-btn.giocata { background: #c0392b !important; color: #fff !important; text-decoration: line-through; opacity: 0.4; }
         .card-btn.avversario { background: #d35400 !important; color: #fff !important; border-color: #ba4a00; }
+        .card-btn.briscola-base { border: 3px solid #f1c40f !important; box-shadow: 0 0 8px #f1c40f; }
 
         .mano-display {
             background: #0b2618;
@@ -106,49 +119,66 @@
 
         .advice-box {
             background: #1c2833;
-            border-left: 4px solid #f1c40f;
-            padding: 12px;
+            border-left: 5px solid #f1c40f;
+            padding: 14px;
             border-radius: 4px;
             margin-top: 15px;
-            font-size: 0.95em;
-            line-height: 1.4;
+            font-size: 1.05em;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🎴 Briscola Flash Pro</h1>
-    <div class="subtitle">Controllo Totale & Selezione Rapida</div>
+    <h1>🎴 Briscola Autonoma Pro</h1>
+    <div class="subtitle">Intelligenza Artificiale Tattica & Gestione Totale</div>
 
     <!-- Dashboard -->
     <div class="dashboard">
-        <div class="dash-box">Briscola: <strong id="lbl-briscola" style="color:#f1c40f;">Da scegliere</strong></div>
+        <div class="dash-box">Briscola: <strong id="lbl-briscola" style="color:#f1c40f;">Da impostare</strong></div>
         <div class="dash-box">Tuoi Punti: <strong id="lbl-miei-punti" style="color:#2ecc71;">0 pt</strong></div>
         <div class="dash-box">Avversario: <strong id="lbl-avv-punti" style="color:#e74c3c;">0 pt</strong></div>
     </div>
 
-    <!-- 1. Configurazione Iniziale -->
+    <!-- 1. Configurazione Iniziale Rapida -->
     <div class="section" style="display: flex; gap: 15px; flex-wrap: wrap;">
         <div style="flex: 1; min-width: 220px;">
-            <h3>1. Scegli Seme Briscola</h3>
-            <div class="btn-group">
-                <button id="btn-briscola-Coppe" onclick="setBriscola('Coppe')">❤️ Coppe</button>
-                <button id="btn-briscola-Denari" onclick="setBriscola('Denari')">🔶 Denari</button>
-                <button id="btn-briscola-Spade" onclick="setBriscola('Spade')">🗡️ Spade</button>
-                <button id="btn-briscola-Bastoni" onclick="setBriscola('Bastoni')">🪵 Bastoni</button>
+            <h3>1. Imposta la Briscola</h3>
+            <div class="btn-group" style="margin-bottom: 8px;">
+                <button id="btn-briscola-Coppe" onclick="setSemeBriscola('Coppe')">❤️ Coppe</button>
+                <button id="btn-briscola-Denari" onclick="setSemeBriscola('Denari')">🔶 Denari</button>
+                <button id="btn-briscola-Spade" onclick="setSemeBriscola('Spade')">🗡️ Spade</button>
+                <button id="btn-briscola-Bastoni" onclick="setSemeBriscola('Bastoni')">🪵 Bastoni</button>
+            </div>
+            <div>
+                <select id="select-valore-briscola" onchange="aggiornaBriscolaSpecifica()">
+                    <option value="">-- Seleziona carta briscola sul fondo --</option>
+                    <option value="Asso">Asso (1)</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="Fante">Fante (8)</option>
+                    <option value="Cavallo">Cavallo (9)</option>
+                    <option value="Re">Re (10)</option>
+                </select>
             </div>
         </div>
         <div style="flex: 1; min-width: 220px;">
-            <h3>2. Chi comincia la partita?</h3>
-            <div class="btn-group">
-                <button id="btn-inizia-io" class="active" onclick="setInizio('io')">Inizio Io</button>
-                <button id="btn-inizia-avv" onclick="setInizio('avversario')">Inizia Avversario</button>
+            <h3>2. Stato del Turno (Autonomo)</h3>
+            <div style="background: #0b2618; padding: 10px; border-radius: 6px; text-align: center; font-size: 0.9em;">
+                Chi apre la mano: <strong id="lbl-chi-apre" style="color: #f1c40f; font-size: 1.1em;">Tu (Primo di mano)</strong>
+            </div>
+            <div style="margin-top: 8px; text-align: right;">
+                <button onclick="resetPartita()" style="background:#7f8c8d; padding:5px 10px; font-size:0.75em;">Reset Partita</button>
             </div>
         </div>
     </div>
 
-    <!-- 3. Mappatura ordinata 1-10 per Seme -->
+    <!-- 3. Griglia Carte Ordinata 1-10 -->
     <div class="section">
         <h3>3. Griglia Carte (1 Click = Tua Mano | 2 Click = Avversario se rispondi)</h3>
         <div id="grid-ordinata"></div>
@@ -157,20 +187,16 @@
         <div class="mano-display">
             <span>🟦 <strong>Tua Mano Attuale:</strong></span>
             <div class="mano-tags" id="mano-tags-container">
-                <span style="color: #bdc3c7; font-style: italic;">Nessuna carta in mano</span>
+                <span style="color: #bdc3c7; font-style: italic;">Seleziona le tue 3 carte cliccando sulla griglia sopra</span>
             </div>
-        </div>
-
-        <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
-            <button onclick="resetPartita()" style="background:#7f8c8d; padding:5px 8px; font-size:0.75em;">Reset Partita</button>
         </div>
     </div>
 
-    <!-- 4. Pulsante e Consiglio -->
-    <button onclick="eseguiAzione()" style="width:100%; padding:12px; font-size:1.1em; background:#f1c40f; color:#000; border-radius:6px; cursor:pointer; font-weight:bold;">🧠 CHIEDI CONSIGLIO</button>
+    <!-- 4. Pulsante e Consiglio Intelligente -->
+    <button onclick="eseguiAnalisiIntelligente()" style="width:100%; padding:14px; font-size:1.15em; background:#f1c40f; color:#000; border-radius:6px; cursor:pointer; font-weight:bold;">🧠 CALCOLA MOSSA PERFETTA</button>
 
     <div class="advice-box" id="advice-box">
-        Seleziona la briscola in alto, clicca sulle tue carte in mano e premi il pulsante.
+        Benvenuto. Imposta la briscola in alto, seleziona le tue 3 carte in mano e premi il pulsante per ricevere l'analisi strategica istantanea.
     </div>
 </div>
 
@@ -185,11 +211,10 @@
     const PUNTI = {'Asso': 11, '3': 10, 'Re': 4, 'Cavallo': 3, 'Fante': 2, '7': 0, '6': 0, '5': 0, '4': 0, '2': 0};
     const FORZA = {'Asso': 10, '3': 9, 'Re': 8, 'Cavallo': 7, 'Fante': 6, '7': 5, '6': 4, '5': 3, '4': 2, '2': 1};
 
-    let briscolaScelta = null;
-    let chiIniziaPartita = 'io';
-    let chiIniziaTurno = 'io';
-    let cartaAvversario = null;
-    let cartaMiaScelta = null;
+    let semeBriscola = null;
+    let valoreBriscola = null;
+    let turnoChiApre = 'io'; // 'io' oppure 'avversario'
+    let cartaAvversarioInCampo = null;
     let statiCarte = {}; 
     let mieiPunti = 0;
     let puntiAvversario = 0;
@@ -226,28 +251,31 @@
         aggiornaUI();
     }
 
-    function setBriscola(seme) {
-        briscolaScelta = seme;
+    function setSemeBriscola(seme) {
+        semeBriscola = seme;
         SEMI.forEach(s => {
             let btn = document.getElementById(`btn-briscola-${s}`);
-            if (btn) {
-                if (s === seme) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            }
+            if (btn) btn.className = (s === seme) ? 'active' : '';
         });
-        document.getElementById('lbl-briscola').innerText = seme;
+        aggiornaLabelBriscola();
         aggiornaUI();
     }
 
-    function setInizio(chi) {
-        chiIniziaPartita = chi;
-        chiIniziaTurno = chi;
-        document.getElementById('btn-inizia-io').className = chi === 'io' ? 'active' : '';
-        document.getElementById('btn-inizia-avv').className = chi === 'avversario' ? 'active' : '';
+    function aggiornaBriscolaSpecifica() {
+        let select = document.getElementById('select-valore-briscola');
+        valoreBriscola = select.value;
+        aggiornaLabelBriscola();
         aggiornaUI();
+    }
+
+    function aggiornaLabelBriscola() {
+        let lbl = "Da impostare";
+        if (semeBriscola && valoreBriscola) {
+            lbl = `${valoreBriscola} di ${semeBriscola}`;
+        } else if (semeBriscola) {
+            lbl = `Seme: ${semeBriscola} (manca valore)`;
+        }
+        document.getElementById('lbl-briscola').innerText = lbl;
     }
 
     function ciclaStatoCarta(carta) {
@@ -257,9 +285,9 @@
         if (statoAttuale === 'normale') {
             if (mieInMano.length < 3) {
                 statiCarte[carta] = 'mano';
-            } else if (chiIniziaTurno === 'avversario') {
+            } else if (turnoChiApre === 'avversario') {
                 statiCarte[carta] = 'avversario';
-                cartaAvversario = carta;
+                cartaAvversarioInCampo = carta;
             } else {
                 statiCarte[carta] = 'giocata';
             }
@@ -267,7 +295,7 @@
             statiCarte[carta] = 'giocata';
         } else if (statoAttuale === 'avversario') {
             statiCarte[carta] = 'normale';
-            cartaAvversario = null;
+            cartaAvversarioInCampo = null;
         } else if (statoAttuale === 'giocata') {
             statiCarte[carta] = 'normale';
         }
@@ -275,11 +303,10 @@
     }
 
     function resetPartita() {
-        mieiPunti = 0; puntiAvversario = 0; cartaAvversario = null; cartaMiaScelta = null;
-        chiIniziaTurno = chiIniziaPartita;
+        mieiPunti = 0; puntiAvversario = 0; cartaAvversarioInCampo = null; turnoChiApre = 'io';
         Object.keys(statiCarte).forEach(k => statiCarte[k] = 'normale');
         aggiornaUI();
-        document.getElementById('advice-box').innerHTML = "Partita resettata. Scegli la briscola e inserisci le tue carte in mano.";
+        document.getElementById('advice-box').innerHTML = "Partita resettata. Inserisci la briscola e le tue carte in mano.";
     }
 
     function aggiornaUI() {
@@ -291,7 +318,14 @@
             let parti = carta.split(' di ');
             let numKey = Object.keys(NOMI_CARTE).find(k => NOMI_CARTE[k] === parti[0]);
             let btn = document.getElementById(`card-${numKey}-${parti[1]}`);
-            if(btn) btn.className = `card-btn ${statiCarte[carta]}`;
+            
+            if(btn) {
+                let className = `card-btn ${statiCarte[carta]}`;
+                if (semeBriscola && valoreBriscola && carta === `${valoreBriscola} di ${semeBriscola}`) {
+                    className += ' briscola-base';
+                }
+                btn.className = className;
+            }
             
             if (statiCarte[carta] === 'mano') carteInMano.push(carta);
         });
@@ -309,77 +343,102 @@
 
         document.getElementById('lbl-miei-punti').innerText = mieiPunti + " pt";
         document.getElementById('lbl-avv-punti').innerText = puntiAvversario + " pt";
+        document.getElementById('lbl-chi-apre').innerText = turnoChiApre === 'io' ? 'Tu (Primo di mano)' : 'L’Avversario (Rispondi)';
     }
 
-    function eseguiAzione() {
-        if (!briscolaScelta) { alert("Seleziona prima il seme della briscola in alto!"); return; }
+    function eseguiAnalisiIntelligente() {
+        if (!semeBriscola || !valoreBriscola) {
+            alert("Seleziona prima il seme e il valore esatto della briscola in alto!");
+            return;
+        }
         let mano = Object.keys(statiCarte).filter(k => statiCarte[k] === 'mano');
-        if (mano.length === 0) { alert("Seleziona almeno una carta che hai in mano!"); return; }
+        if (mano.length === 0) {
+            alert("Seleziona almeno una carta che hai in mano!");
+            return;
+        }
 
         let box = document.getElementById('advice-box');
         let msg = "";
 
-        if (chiIniziaTurno === 'io') {
-            let lisci = mano.filter(c => !c.endsWith(` di ${briscolaScelta}`) && ['7','6','5','4','2','Asso'].some(v => c.startsWith(v)));
-            let scelta = lisci.length > 0 ? lisci[0] : (mano.find(c => !c.endsWith(` di ${briscolaScelta}`)) || mano[0]);
+        // Calcolo intelligenza avanzata su quante carte mancano
+        let carteViste = Object.keys(statiCarte).filter(k => statiCarte[k] !== 'normale').length;
+        let carteRimasteNelMazzo = 40 - carteViste;
+        let faseFinale = carteRimasteNelMazzo <= 6;
+
+        if (turnoChiApre === 'io') {
+            // TU APRI IL TURNO
+            let lisci = mano.filter(c => !c.endsWith(` di ${semeBriscola}`) && ['7','6','5','4','2','Asso'].some(v => c.startsWith(v)));
+            // Seleziona la mossa migliore: preferisci lisce pure o carte a 0 punti
+            let scelta = lisci.length > 0 ? lisci[0] : (mano.find(c => !c.endsWith(` di ${semeBriscola}`)) || mano[0]);
+
+            msg = `👉 <strong>STRATEGIA D'APERTURA:</strong> Gioca <strong>${scelta}</strong>.<br><span style="font-size:0.9em; color:#f39c12;">💡 Appena l'avversario risponde online, clicca sulla sua carta nella griglia e ripremi il pulsante: l'app farà tutto in automatico!</span>`;
             
-            cartaMiaScelta = scelta;
-            msg = `👉 <strong>Tu giochi per primo. Metti giù:</strong> ${scelta}<br><span style="font-size:0.85em; color:#f39c12;">💡 Quando l'avversario risponde online, clicca sulla sua carta nella griglia e ripremi il pulsante!</span>`;
-            chiIniziaTurno = 'avversario'; 
+            // Memorizziamo la carta giocata per poi chiudere la presa
+            window.ultimaMiaMossa = scelta;
+            turnoChiApre = 'avversario'; // Il prossimo turno l'avversario risponde
+
         } else {
-            if (!cartaAvversario) {
+            // RISPONDI ALL'AVVERSARIO
+            if (!cartaAvversarioInCampo) {
                 let trovataAvv = Object.keys(statiCarte).find(k => statiCarte[k] === 'avversario');
-                if (trovataAvv) cartaAvversario = trovataAvv;
+                if (trovataAvv) cartaAvversarioInCampo = trovataAvv;
                 else {
-                    alert("L'avversario ha risposto? Clicca sulla sua carta nella griglia prima di chiedere il consiglio!");
+                    alert("L'avversario ha tirato una carta online? Cliccaci sopra nella griglia prima di chiedere il consiglio!");
                     return;
                 }
             }
 
-            let [vAvv, sAvv] = cartaAvversario.split(' di ');
+            let [vAvv, sAvv] = cartaAvversarioInCampo.split(' di ');
             let pAvv = PUNTI[vAvv];
-            
+
+            // Trova quali carte in mano possono vincere la presa
             let vincenti = mano.filter(c => {
                 let [vC, sC] = c.split(' di ');
                 if (sC === sAvv && FORZA[vC] > FORZA[vAvv]) return true;
-                if (sC === briscolaScelta && sAvv !== briscolaScelta) return true;
+                if (sC === semeBriscola && sAvv !== semeBriscola) return true;
+                if (sC === semeBriscola && sAvv === semeBriscola && FORZA[vC] > FORZA[vAvv]) return true;
                 return false;
             });
 
-            let scelta = "";
+            let sceltaMossa = "";
             if (vincenti.length === 0 || pAvv === 0) {
-                scelta = mano.reduce((p, c) => PUNTI[p.split(' di ')[0]] < PUNTI[c.split(' di ')[0]] ? p : c);
-                msg = `❌ <strong>Non rischiare. Rispondi con:</strong> ${scelta}`;
+                // Non puoi vincere o l'avversario ha tirato un 0 punti: scarta la carta peggiore
+                sceltaMossa = mano.reduce((p, c) => PUNTI[p.split(' di ')[0]] < PUNTI[c.split(' di ')[0]] ? p : c);
+                msg = `❌ <strong>DIFESA:</strong> Non rischiare punti o briscole. Scarta la carta peggiore:<br>👉 <strong>${sceltaMossa}</strong>`;
             } else {
-                scelta = vincenti[0];
-                msg = `🔥 <strong>L'avversario ha messo ${pAvv} pt. Prendi con:</strong> ${scelta}`;
+                // Puoi vincere e l'avversario ha messo un carico o siamo in finale: prendi
+                sceltaMossa = vincenti[0];
+                msg = `🔥 <strong>ATTACCO:</strong> L'avversario ha messo ${pAvv} pt. Conviene prendere! Vinci giocando:<br>👉 <strong>${sceltaMossa}</strong>`;
             }
 
-            cartaMiaScelta = scelta;
+            if (faseFinale) {
+                msg += `<br><span style="color:#e74c3c; font-weight:bold;">⚡ ATTENZIONE: Siamo nella fase finale (ultimi turni). Gestisci le briscole con precisione chirurgica!</span>`;
+            }
 
-            let [vM, sM] = scelta.split(' di ');
+            // CALCOLO AUTOMATICO VINCITORE DELLA MANO E PUNTEGGIO
+            let [vM, sM] = sceltaMossa.split(' di ');
             let mioVince = false;
 
             if (sM === sAvv && FORZA[vM] > FORZA[vAvv]) mioVince = true;
-            else if (sM === briscolaScelta && sAvv !== briscolaScelta) mioVince = true;
-            else if (sM === briscolaScelta && sAvv === briscolaScelta && FORZA[vM] > FORZA[vAvv]) mioVince = true;
+            else if (sM === semeBriscola && sAvv !== semeBriscola) mioVince = true;
+            else if (sM === semeBriscola && sAvv === semeBriscola && FORZA[vM] > FORZA[vAvv]) mioVince = true;
 
-            let puntiTotali = pAvv + PUNTI[vM];
+            let puntiTotaliMano = pAvv + PUNTI[vM];
 
             if (mioVince) {
-                mieiPunti += puntiTotali;
-                msg += `<br><span style="color:#2ecc71; font-weight:bold;">⚡ PRESA TUA! (+${puntiTotali} pt). Parti tu nel prossimo turno.</span>`;
-                chiIniziaTurno = 'io';
+                mieiPunti += puntiTotaliMano;
+                msg += `<br><span style="color:#2ecc71; font-weight:bold;">🏆 PRESA TUA (+${puntiTotaliMano} pt)! Hai vinto la mano e parti tu nel turno successivo.</span>`;
+                turnoChiApre = 'io';
             } else {
-                puntiAvversario += puntiTotali;
-                msg += `<br><span style="color:#e74c3c; font-weight:bold;">⚡ PRESA AVVERSARIO! (+${puntiTotali} pt). Parte l'avversario nel prossimo turno.</span>`;
-                chiIniziaTurno = 'avversario';
+                puntiAvversario += puntiTotaliMano;
+                msg += `<br><span style="color:#e74c3c; font-weight:bold;">⚠️ PRESA AVVERSARIO (+${puntiTotaliMano} pt)! L'avversario ha vinto la mano e parte lui nel turno successivo.</span>`;
+                turnoChiApre = 'avversario';
             }
 
-            statiCarte[cartaAvversario] = 'giocata';
-            statiCarte[cartaMiaScelta] = 'giocata';
-            cartaAvversario = null;
-            cartaMiaScelta = null;
+            // ELIMINAZIONE AUTOMATICA DAL MAZZO DELLE DUE CARTE USATE
+            statiCarte[cartaAvversarioInCampo] = 'giocata';
+            statiCarte[sceltaMossa] = 'giocata';
+            cartaAvversarioInCampo = null;
         }
 
         aggiornaUI();
