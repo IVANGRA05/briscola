@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Briscola Master AI - Infallibile</title>
+    <title>Briscola Master AI - Strategia Perfetta</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #0b2e1b; color: #fff; margin: 0; padding: 10px; }
         .container { max-width: 850px; margin: 0 auto; background: #134229; padding: 15px; border-radius: 12px; border: 1px solid #1e6b42; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
@@ -28,7 +28,7 @@
         .mano-card { flex: 1; max-width: 85px; background: #2980b9; color: white; border: 2px solid #1f618d; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; font-size: 1em; text-align: center; }
         .mano-card.empty { background: transparent; border: 2px dashed #2980b9; color: transparent; }
 
-        /* SWITCH SELEZIONE (Previene l'errore del tocco) */
+        /* SWITCH SELEZIONE */
         .mode-selector { display: flex; background: #0b2618; border-radius: 6px; overflow: hidden; margin-bottom: 10px; border: 1px solid #1e6b42; }
         .mode-btn { flex: 1; padding: 10px; text-align: center; font-weight: bold; background: transparent; border: none; color: #7f8c8d; font-size: 0.95em; pointer-events: none; }
         .mode-btn.active-mia { background: #2980b9; color: #fff; }
@@ -54,7 +54,7 @@
 <body>
 
 <div class="container">
-    <h1>🎴 Briscola IA Infallibile</h1>
+    <h1>🎴 Briscola Master Strategica</h1>
     
     <div id="banner-stato">INIZIALIZZAZIONE...</div>
 
@@ -67,7 +67,6 @@
         <button class="btn-setup" style="background:#c0392b" onclick="resetPartita()">Reset Totale</button>
     </div>
 
-    <!-- PUNTEGGI -->
     <div class="dashboard">
         <div>Briscola in fondo:<br><strong id="lbl-briscola" style="color:#f1c40f;">?</strong></div>
         <div>Miei Punti:<br><strong id="lbl-punti-miei" style="color:#2ecc71;">0</strong></div>
@@ -92,15 +91,11 @@
         </div>
     </div>
 
-    <!-- GRIGLIA -->
     <div style="background: #0f3822; padding: 10px; border-radius: 8px; border: 1px solid #1e6b42;">
-        
-        <!-- TARGET INDICATOR -->
         <div class="mode-selector">
             <button class="mode-btn active-mia" id="mode-mia">🟦 CLICCA PER LA TUA MANO</button>
             <button class="mode-btn" id="mode-avv">🟥 CLICCA MOSSA AVVERSARIO</button>
         </div>
-        
         <div id="grid-container"></div>
     </div>
 
@@ -120,7 +115,7 @@
     let tavolo = { mia: null, avv: null };
     let punti = { miei: 0, avv: 0 };
     let turnoCorrente = 'io'; 
-    let bloccoInterfaccia = false; // Ferma i clic mentre l'IA pensa
+    let bloccoInterfaccia = false; 
 
     function init() {
         costruisciGriglia();
@@ -161,7 +156,6 @@
         });
     }
 
-    // --- IL NUOVO CERVELLO IA ---
     function cicloDiGioco() {
         if (bloccoInterfaccia) return;
 
@@ -173,68 +167,59 @@
             return;
         }
 
-        // 1. Setup
         if (!briscola.seme || (mano.length < 3 && uscite.length === 0)) {
             impostaStato("⚙️ SETUP: Scegli Briscola e seleziona le tue 3 carte", "#8e44ad", 'mia');
             aggiornaUI(); return;
         }
 
-        // 2. Risoluzione Prese
         if (tavolo.mia && tavolo.avv) {
             bloccoInterfaccia = true;
             impostaStato("⚔️ CALCOLO PRESA IN CORSO...", "#e67e22", 'mia');
             aggiornaUI();
-            setTimeout(risolviPresa, 900); // Pausa di mezzo secondo per farti vedere le carte giocate
+            setTimeout(risolviPresa, 900);
             return;
         }
 
-        // 3. Pescata (Solo se ci sono carte nel mazzo!)
-        // In briscola le carte escono a 2 a 2. Fino a 34 uscite il mazzo ha carte. A 34 si pesca l'ultima volta.
         let devoPescare = (uscite.length <= 34 && mano.length < 3);
         if (devoPescare && !tavolo.mia && !tavolo.avv) {
             impostaStato("🃏 PESCATA: Clicca sulla griglia la carta che peschi", "#d35400", 'mia');
             aggiornaUI(); return;
         }
 
-        // 4. Gioco: Tocca a Me Iniziare
         if (turnoCorrente === 'io' && !tavolo.mia && mano.length > 0) {
-            let mossa = IA_CalcolaMossa(true, null);
+            let mossa = IA_StrategiaApertura();
             tavolo.mia = mossa;
             mano = mano.filter(c => c !== mossa);
-            log(`🤖 <strong>APERTURA:</strong> Ho giocato in automatico il ${nome(mossa)}.`);
+            log(`🤖 <strong>APERTURA TATTICA:</strong> Giocato il ${nome(mossa)}.`);
             cicloDiGioco(); return;
         }
 
-        // 5. Gioco: Aspetto che l'avversario risponda
         if (turnoCorrente === 'io' && tavolo.mia && !tavolo.avv) {
             impostaStato("🟠 ATTESA: Clicca sulla griglia cosa tira l'avversario", "#c0392b", 'avv');
             aggiornaUI(); return;
         }
 
-        // 6. Gioco: Tocca all'avversario Iniziare
         if (turnoCorrente === 'avv' && !tavolo.avv && !tavolo.mia) {
             impostaStato("🟠 INIZIA LUI: Clicca sulla griglia la carta che tira", "#c0392b", 'avv');
             aggiornaUI(); return;
         }
 
-        // 7. Gioco: L'avversario ha iniziato, Io Rispondo
         if (turnoCorrente === 'avv' && tavolo.avv && !tavolo.mia && mano.length > 0) {
-            let mossa = IA_CalcolaMossa(false, tavolo.avv);
+            let mossa = IA_StrategiaRisposta(tavolo.avv);
             tavolo.mia = mossa;
             mano = mano.filter(c => c !== mossa);
-            log(`🤖 <strong>RISPOSTA:</strong> Lui ha tirato ${nome(tavolo.avv)}. Io rispondo con ${nome(mossa)}.`);
+            log(`🤖 <strong>DIFESA/ATTACCO:</strong> Lui ${nome(tavolo.avv)}. Io rispondo con ${nome(mossa)}.`);
             cicloDiGioco(); return;
         }
     }
 
-    // --- AZIONI AL TOCCO SULLA GRIGLIA ---
     function toccaGriglia(idCarta) {
         if (bloccoInterfaccia || uscite.includes(idCarta) || tavolo.mia === idCarta || tavolo.avv === idCarta) return;
 
         let indicatore = document.getElementById('mode-mia').classList.contains('active-mia') ? 'mia' : 'avv';
 
         if (indicatore === 'mia') {
-            if (mano.includes(idCarta)) mano = mano.filter(c => c !== idCarta); // undo
+            if (mano.includes(idCarta)) mano = mano.filter(c => c !== idCarta); 
             else if (mano.length < 3) mano.push(idCarta);
         } else {
             if (mano.includes(idCarta)) {
@@ -245,60 +230,84 @@
         cicloDiGioco();
     }
 
-    // --- ALGORITMO IA BRISCOLA PERFETTO ---
-    function IA_CalcolaMossa(isApertura, cartaAvv) {
-        // Prepara un array delle tue carte con tutti i dati utili
+    // --- STRATEGIA DI APERTURA (Quando tiri tu per primo) ---
+    function IA_StrategiaApertura() {
+        let mie = mano.map(id => {
+            let [n, s] = id.split('-');
+            return { id: id, p: PUNTI[n], f: FORZA[n], isB: (s === briscola.seme) };
+        });
+
+        // 1. Cerca prima un "liscio" a 0 punti che non sia briscola (es. 2, 4, 5, 6, 7)
+        let lisciZero = mie.filter(c => !c.isB && c.p === 0);
+        if (lisciZero.length > 0) {
+            // Tira il liscio con forza minore per non sprecare carte buone
+            lisciZero.sort((a, b) => a.f - b.f);
+            return lisciZero[0].id;
+        }
+
+        // 2. Se non hai lisci a 0, cerca una non-briscola qualsiasi che valga meno punti possibili
+        let nonBriscole = mie.filter(c => !c.isB);
+        if (nonBriscole.length > 0) {
+            nonBriscole.sort((a, b) => a.p - b.p || a.f - b.f);
+            return nonBriscole[0].id;
+        }
+
+        // 3. Se hai solo briscole in mano, gioca la briscola più bassa
+        mie.sort((a, b) => a.f - b.f);
+        return mie[0].id;
+    }
+
+    // --- STRATEGIA DI RISPOSTA (Quando rispondi all'avversario) ---
+    function IA_StrategiaRisposta(cartaAvv) {
+        let [nAvv, sAvv] = cartaAvv.split('-');
+        let pA = PUNTI[nAvv];
+        let fB = FORZA[nAvv];
+        let isAvvBrisc = (sAvv === briscola.seme);
+        let faseFinale = uscite.length >= 30;
+
         let mie = mano.map(id => {
             let [n, s] = id.split('-');
             return { id: id, s: s, p: PUNTI[n], f: FORZA[n], isB: (s === briscola.seme) };
         });
 
-        // Ordinamento dal peggiore al migliore: prima lisci senza punti, poi figure senza briscola, poi briscole.
-        mie.sort((a, b) => {
-            if (a.isB !== b.isB) return a.isB ? 1 : -1;
-            if (a.p !== b.p) return a.p - b.p;
-            return a.f - b.f;
+        // Trova tutte le carte con cui puoi vincere legalmente la mano
+        let vincenti = mie.filter(c => {
+            if (c.s === sAvv && c.f > fB) return true; // Stesso seme più forte
+            if (c.isB && !isAvvBrisc) return true;     // Taglio di briscola se lui non è a briscola
+            if (c.isB && isAvvBrisc && c.f > fB) return true; // Briscola più alta se anche lui è a briscola
+            return false;
         });
 
-        if (isApertura) {
-            return mie[0].id; // Gioca la carta più inutile
-        } else {
-            // Risposta
-            let [nAvv, sAvv] = cartaAvv.split('-');
-            let pA = PUNTI[nAvv];
-            let fB = FORZA[nAvv];
-            let isAvvBrisc = (sAvv === briscola.seme);
-            let faseFinale = uscite.length >= 30; // Mancano pochissime carte
+        // Se non puoi vincere in nessun modo, scarta la carta peggiore (0 punti e minor forza)
+        if (vincenti.length === 0) {
+            mie.sort((a, b) => a.p - b.p || a.f - b.f);
+            return mie[0].id;
+        }
 
-            // Cerca carte che vincono
-            let vincenti = mie.filter(c => {
-                if (c.s === sAvv && c.f > fB) return true; // Stesso seme più alta
-                if (c.isB && !isAvvBrisc) return true; // Taglio di briscola
-                return false;
-            });
-
-            if (vincenti.length === 0) {
-                return mie[0].id; // Se devo perdere, butto la peggiore
-            }
-
-            // Ordina le vincenti dalla più economica
-            vincenti.sort((a, b) => {
-                if (a.isB !== b.isB) return a.isB ? 1 : -1;
-                if (a.p !== b.p) return a.p - b.p;
-                return a.f - b.f;
-            });
-
-            // Se l'avversario ha messo un carico (>0 pt) o siamo alla fine, o posso vincere gratis (senza briscola): PRENDO!
-            if (pA > 0 || faseFinale || !vincenti[0].isB) {
-                return vincenti[0].id;
+        // Se l'avversario ha buttato una carta da 0 punti (es. un 2 o un 4), NON sprecare una briscola o un carico a meno che non siamo in finale!
+        if (pA === 0 && !faseFinale) {
+            // Controlla se puoi vincere senza sprecare briscole (es. con un Asso di un altro seme se lui ha tirato un 2 dello stesso seme)
+            let vincentiLisce = vincenti.filter(c => !c.isB);
+            if (vincentiLisce.length > 0) {
+                vincentiLisce.sort((a, b) => a.p - b.p || a.f - b.f);
+                return vincentiLisce[0].id; // Prendi gratis senza briscola
             } else {
-                // Lui ha tirato un 2, io per prendere dovrei sprecare una briscola a metà partita. NON LO FACCIO!
-                return mie[0].id; 
+                // Altrimenti, per un 2 da 0 punti, rifiutati di sprecare briscole o carichi: scarta la peggiore!
+                mie.sort((a, b) => a.p - b.p || a.f - b.f);
+                return mie[0].id;
             }
         }
+
+        // Se l'avversario ha messo un carico (Asso=11 o Tre=10) o siamo alla fine, CONVIENE PRENDERE!
+        // Ordina le vincenti per usare quella che consuma meno valore possibile (es. briscola bassa o carta di minor valore)
+        vincenti.sort((a, b) => {
+            if (a.isB !== b.isB) return a.isB ? 1 : -1; // Preferisci non usare briscole se puoi
+            return a.p - b.p || a.f - b.f;
+        });
+
+        return vincenti[0].id;
     }
 
-    // --- CALCOLO MATEMATICO PRESA ---
     function risolviPresa() {
         let [nM, sM] = tavolo.mia.split('-');
         let [nA, sA] = tavolo.avv.split('-');
@@ -333,7 +342,6 @@
         cicloDiGioco();
     }
 
-    // --- FUNZIONI GRAFICHE ---
     function impostaStato(testo, colore, targetGrid) {
         let b = document.getElementById('banner-stato');
         b.innerText = testo; b.style.background = colore;
